@@ -1,146 +1,101 @@
 import sqlite3
 
-DB = "biblioteca.db"
-
+# ==================================================
+# CONEXÃO COM O BANCO DE DADOS
+# ==================================================
 def conectar():
-    return sqlite3.connect(DB)
+    conexao = sqlite3.connect("biblioteca.db")
+    cursor = conexao.cursor()
+    return conexao, cursor
 
-# ---------------- TABELAS ----------------
+# ==================================================
+# CRIAÇÃO DAS TABELAS (USUÁRIOS E LIVROS)
+# ==================================================
 def criar_tabela():
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("""
+    conexao, cursor = conectar()
+
+    # Tabela de usuários
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            idade TEXT,
+            curso TEXT,
+            cep TEXT,
+            email TEXT UNIQUE NOT NULL,
+            senha TEXT NOT NULL
+        )
+    ''')
+
+    # Tabela de livros
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS livros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titulo TEXT NOT NULL,
             autor TEXT NOT NULL,
-            disponivel TEXT NOT NULL, -- “Sim” ou “Não”
-            imagem TEXT -- caminho da capa
+            disponivel TEXT NOT NULL,
+            imagem TEXT
         )
-    """)
-    con.commit()
-    con.close()
+    ''')
 
-def criar_tabela_usuarios():
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            senha TEXT NOT NULL
-        )
-    """)
-    con.commit()
-    con.close()
+    conexao.commit()
+    conexao.close()
 
-def criar_tabela_emprestimos():
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS emprestimos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            usuario TEXT NOT NULL,
-            livro_id INTEGER NOT NULL,
-            data_emprestimo TEXT NOT NULL,
-            dias_restantes INTEGER NOT NULL,
-            FOREIGN KEY(livro_id) REFERENCES livros(id)
-        )
-    """)
-    con.commit()
-    con.close()
-
-# ---------------- LIVROS ----------------
-def inserir(titulo, autor, disponivel, imagem=None):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute(
-        "INSERT INTO livros (titulo, autor, disponivel, imagem) VALUES (?,?,?,?)",
-        (titulo, autor, disponivel, imagem)
-    )
-    con.commit()
-    con.close()
-
-def listar():
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM livros")
-    dados = cur.fetchall()
-    con.close()
-    return dados
-
-def editar(id_livro, titulo, autor, disponivel, imagem=None):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("""
-        UPDATE livros
-        SET titulo=?, autor=?, disponivel=?, imagem=?
-        WHERE id=?
-    """, (titulo, autor, disponivel, imagem, id_livro))
-    con.commit()
-    con.close()
-
-def excluir(id_livro):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("DELETE FROM livros WHERE id=?", (id_livro,))
-    con.commit()
-    con.close()
-
-# ---------------- USUÁRIOS ----------------
-def inserir_usuario(nome, email, senha):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)", (nome, email, senha))
-    con.commit()
-    con.close()
+# ==================================================
+# FUNÇÕES PARA USUÁRIOS (CADASTRO E LOGIN)
+# ==================================================
+def inserir_usuario(nome, idade, curso, cep, email, senha):
+    conexao, cursor = conectar()
+    try:
+        cursor.execute("""
+            INSERT INTO usuarios (nome, idade, curso, cep, email, senha)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (nome, idade, curso, cep, email, senha))
+        conexao.commit()
+        resultado = True
+    except sqlite3.IntegrityError:
+        resultado = False
+    conexao.close()
+    return resultado
 
 def verificar_login(email, senha):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM usuarios WHERE email=? AND senha=?", (email, senha))
-    usuario = cur.fetchone()
-    con.close()
+    conexao, cursor = conectar()
+    cursor.execute("SELECT * FROM usuarios WHERE email = ? AND senha = ?", (email, senha))
+    usuario = cursor.fetchone()
+    conexao.close()
     return usuario
 
-# ---------------- EMPRÉSTIMOS ----------------
-def emprestar_livro(usuario, livro_id, data, dias):
-    con = conectar()
-    cur = con.cursor()
-    # registra empréstimo
-    cur.execute("INSERT INTO emprestimos (usuario, livro_id, data_emprestimo, dias_restantes) VALUES (?, ?, ?, ?)",
-                (usuario, livro_id, data, dias))
-    # atualiza disponibilidade
-    cur.execute("UPDATE livros SET disponivel=? WHERE id=?", ("Não", livro_id))
-    con.commit()
-    con.close()
+# ==================================================
+# FUNÇÕES PARA LIVROS (CADASTRO, LISTAGEM, EDIÇÃO, EXCLUSÃO)
+# ==================================================
+def inserir_livro(titulo, autor, disponivel, imagem):
+    conexao, cursor = conectar()
+    cursor.execute("""
+        INSERT INTO livros (titulo, autor, disponivel, imagem)
+        VALUES (?, ?, ?, ?)
+    """, (titulo, autor, disponivel, imagem))
+    conexao.commit()
+    conexao.close()
 
-def devolver_livro(livro_id):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("UPDATE livros SET disponivel=? WHERE id=?", ("Sim", livro_id))
-    con.commit()
-    con.close()
-
-def listar_emprestimos(usuario):
-    con = conectar()
-    cur = con.cursor()
-    cur.execute("""
-        SELECT livros.titulo, livros.autor, emprestimos.data_emprestimo, emprestimos.dias_restantes
-        FROM emprestimos
-        JOIN livros ON emprestimos.livro_id = livros.id
-        WHERE emprestimos.usuario=?
-    """, (usuario,))
-    dados = cur.fetchall()
-    con.close()
+def listar_livros():
+    conexao, cursor = conectar()
+    cursor.execute("SELECT * FROM livros")
+    dados = cursor.fetchall()
+    conexao.close()
     return dados
 
+def editar_livro(id_livro, titulo, autor, disponivel, imagem):
+    conexao, cursor = conectar()
+    cursor.execute("""
+        UPDATE livros
+        SET titulo = ?, autor = ?, disponivel = ?, imagem = ?
+        WHERE id = ?
+    """, (titulo, autor, disponivel, imagem, id_livro))
+    conexao.commit()
+    conexao.close()
 
-
-# Criar tabelas no início
-criar_tabela()
-criar_tabela_usuarios()
-criar_tabela_emprestimos()
-
-
+def excluir_livro(id_livro):
+    conexao, cursor = conectar()
+    cursor.execute("DELETE FROM livros WHERE id = ?", (id_livro,))
+    conexao.commit()
+    conexao.close()

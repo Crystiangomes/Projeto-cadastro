@@ -24,7 +24,7 @@ def pesquisar_livros(criterio, valor):
 
 # tela home com Toplevel
 def home_page(usuario, master=None):
-    # Se já existe uma janela principal, abre como Toplevel
+    # Se já existe uma janela_home principal, abre como Toplevel
     home = tk.Toplevel(master) if master else tk.Tk()
     home.title("Home - Biblioteca")
     home.geometry("800x500")
@@ -142,7 +142,7 @@ def home_page(usuario, master=None):
     tk.Label(conteudo, text="Aqui você pode acessar seu perfil, ver seu histórico e pesquisar livros.",
              font=("Arial", 12), bg="white").pack(pady=10)
 
-    # só roda o loop se for janela principal
+    # só roda o loop se for janela_home principal
     if master is None:
         home.mainloop()
 
