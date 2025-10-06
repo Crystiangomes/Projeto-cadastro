@@ -28,7 +28,7 @@ def abrir_cadastro():
 
     janela_cadastro = tk.Tk()
     janela_cadastro.title("Cadastro de Usuário")
-    janela_cadastro.geometry("400x600")
+    janela_cadastro.geometry("700x700")
     janela_cadastro.configure(bg="#f4f4f4")
 
     campos = [("Nome", "nome"), ("Idade", "idade"), ("Curso", "curso"), ("CEP", "cep"), ("Email", "email"), ("Senha", "senha")]
