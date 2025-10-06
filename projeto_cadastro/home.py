@@ -102,7 +102,6 @@ def home_page(root, usuario_email):
             botoes_frame = tk.Frame(card, bg="#FFFFFF")
             botoes_frame.pack(side="right", padx=10, pady=10)
 
-            # 🔹 Atualizado: agora mostra “Avaliar” e “Devolver” também aqui
             if id_livro in emprestados:
                 tk.Button(
                     botoes_frame,
@@ -243,11 +242,12 @@ def home_page(root, usuario_email):
                 messagebox.showerror("Erro", "Não foi possível atualizar os dados.")
         tk.Button(conteudo, text="💾 Salvar Alterações", bg="#4D908E", fg="white", command=salvar).pack(pady=15)
 
-    # ====== SAIR ======
+    # ====== SAIR (CORRIGIDO) ======
     def sair():
-        root.destroy()
+        for widget in root.winfo_children():
+            widget.destroy()
         import login
-        login.main()
+        login.abrir_login()
 
     # ====== MENU ======
     botoes = [
