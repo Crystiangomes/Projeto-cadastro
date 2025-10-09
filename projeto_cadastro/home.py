@@ -47,8 +47,37 @@ def home_page(root, usuario_email):
     # ====== INÍCIO ======
     def mostrar_inicio():
         limpar_conteudo()
-        tk.Label(conteudo, text="🏠 Bem-vindo à Biblioteca", font=("Arial", 22, "bold"), bg="#F8F9FA").pack(pady=20)
-        tk.Label(conteudo, text=f"Usuário logado: {usuario_email}", bg="#F8F9FA", font=("Arial", 13)).pack(pady=10)
+        tk.Label(
+            conteudo,
+            text="🏠 Bem-vindo à Biblioteca",
+            font=("Arial", 22, "bold"),
+            bg="#F8F9FA"
+        ).pack(pady=20)
+
+        tk.Label(
+            conteudo,
+            text=f"Usuário logado: {usuario_email}",
+            bg="#F8F9FA",
+            font=("Arial", 13)
+        ).pack(pady=10)
+
+        # ====== TEXTO BIBLIOTECA ======
+        texto_biblioteca = (
+            "Nossa biblioteca foi criada com o objetivo de incentivar a leitura e facilitar o acesso a livros digitais.\n"
+            "Aqui, você pode explorar diferentes gêneros, descobrir novos autores e gerenciar sua coleção pessoal com facilidade.\n\n"
+            "Nosso objetivo é tornar a leitura acessível, agradável e sempre ao seu alcance.\n"
+            "Você pode organizar seus livros, acompanhar suas leituras e conhecer novos autores, tudo em um só lugar."
+        )
+
+        tk.Label(
+            conteudo,
+            text=texto_biblioteca,
+            wraplength=800,
+            justify="left",
+            bg="#F8F9FA",
+            font=("Arial", 13),
+            fg="#000000"
+        ).pack(pady=40)
 
     # ====== LIVROS DISPONÍVEIS ======
     def mostrar_livros():
@@ -242,7 +271,7 @@ def home_page(root, usuario_email):
                 messagebox.showerror("Erro", "Não foi possível atualizar os dados.")
         tk.Button(conteudo, text="💾 Salvar Alterações", bg="#4D908E", fg="white", command=salvar).pack(pady=15)
 
-    # ====== SAIR (CORRIGIDO) ======
+    # ====== SAIR ======
     def sair():
         for widget in root.winfo_children():
             widget.destroy()
@@ -259,8 +288,16 @@ def home_page(root, usuario_email):
         ("🚪 Sair", sair),
     ]
     for texto, comando in botoes:
-        tk.Button(menu_lateral, text=texto, bg="#4D908E", fg="white", relief="flat", anchor="w",
-                  cursor="hand2", command=comando).pack(fill="x", padx=10, pady=5)
+        tk.Button(
+            menu_lateral,
+            text=texto,
+            bg="#4D908E",
+            fg="white",
+            relief="flat",
+            anchor="w",
+            cursor="hand2",
+            command=comando
+        ).pack(fill="x", padx=10, pady=5)
 
     # ====== EMPRÉSTIMO ======
     def emprestar_livro(id_livro, titulo):
